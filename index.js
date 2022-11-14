@@ -134,6 +134,29 @@ app.get("/messages", async (req, res) => {
     }
 })
 
+app.delete("/messages/:id", async (req, res) => {
+    const { user } = req.headers
+    const { id } = req.params
+
+    try {
+        const message = await messagesCollection.findOne({ _id: ObjectId(id)})
+
+        if (!message) {
+            return res.sendStatus(404)
+        }
+
+        if (user !== message.from){
+            return res.sendStatus(401)
+        }
+
+        await messagesCollection.deleteOne(message)
+
+    } catch (error) {
+        console.log(error)
+        res.sendStatus(500)
+    }
+})
+
 app.post("/status", async (req, res) => {
     try {
         const name = req.headers.user
@@ -164,7 +187,7 @@ setInterval(async () => {
                 await messagesCollection.insertOne({
                     from: user.name, 
                     to: 'Todos', 
-                    text: 'sai na sala...',
+                    text: 'sai da sala...',
                     type: 'status', 
                     time
                 })
